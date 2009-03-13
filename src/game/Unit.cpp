@@ -5045,6 +5045,21 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     triggered_spell_id = 37378;
                     break;
                 }
+				//Pandemic proc
+                case 58435:
+                case 58436:
+                case 58437:
+                {
+				float chance  = 0.0f; // I don't know how to get spell crit rating better o_O
+					  chance += ((Player*)this)->GetSpellCritFromIntellect();
+					  chance += ((Player*)this)->GetTotalAuraModifier(SPELL_AURA_MOD_SPELL_CRIT_CHANCE);
+					  chance += ((Player*)this)->GetRatingBonusValue(CR_CRIT_SPELL);
+				if (!roll_chance_f(chance))
+					return false;
+                    basepoints0 = int32(damage*triggerAmount/100);
+                    triggered_spell_id = 58691;
+                    break;
+                }
             }
             break;
         }
