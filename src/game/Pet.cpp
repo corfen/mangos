@@ -1102,7 +1102,7 @@ void Pet::_SaveSpellCooldowns()
     // remove oudated and save active
     for(CreatureSpellCooldowns::iterator itr = m_CreatureSpellCooldowns.begin();itr != m_CreatureSpellCooldowns.end();)
     {
-        if(itr->second <= curTime)
+        if(itr->second <= curTime || getDeathState()==CORPSE)
             m_CreatureSpellCooldowns.erase(itr++);
         else
         {
