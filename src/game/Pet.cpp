@@ -458,9 +458,22 @@ void Pet::setDeathState(DeathState s)                       // overwrite virtual
     Creature::setDeathState(s);
     if(getDeathState()==CORPSE)
     {
-        //remove summoned pet (no corpse)
-        if(getPetType()==SUMMON_PET)
-            Remove(PET_SAVE_NOT_IN_SLOT);
+        //remove summoned pet
+        if(getPetType()==SUMMON_PET || getPetType()==GUARDIAN_PET)
+        {
+            //Warlock summoned pet has corpse
+            Unit* owner = GetOwner();
+            if(owner && owner->GetTypeId()==TYPEID_PLAYER && owner->getClass()==CLASS_WARLOCK)
+            {
+                SetUInt32Value( UNIT_DYNAMIC_FLAGS, 0x00 );
+                RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
+                // 10 sec until corpse disappear
+                m_deathTimer = 10000;
+            }
+            //remove summoned pet (no corpse)
+            else
+                Remove(PET_SAVE_NOT_IN_SLOT);
+        }
         // other will despawn at corpse desppawning (Pet::Update code)
         else
         {
@@ -487,6 +500,14 @@ void Pet::Update(uint32 diff)
 {
     if(m_removed)                                           // pet already removed, just wait in remove queue, no updates
         return;
+
+    Unit* owner = GetOwner();
+    if(owner && owner->IsPvP())
+        SetPvP(true);
+    // remove arena FFA flag.
+    AreaTableEntry const* area = GetAreaEntryByAreaID(GetAreaId());
+    if(area && !(area->flags & AREA_FLAG_ARENA) && HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP))
+        RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
 
     switch( m_deathState )
     {
